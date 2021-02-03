@@ -9,11 +9,12 @@ interface FhxFile {
 interface FileChange {
   id: any,
   name: string,
-  changes: {
+  changes?: {
     fieldName: string,
     originalValue: any,
     newValue: any
   }[],
+  message: string
 }
 
 @Component({
@@ -79,7 +80,6 @@ export class AppComponent {
   }
 
   getTextMessage(line) {
-    console.log(line.originalValue, +line.originalValue, isNaN(+line.originalValue));
     if (isNaN(+line.originalValue)) return `Changes <span class="underline">${line.fieldName}</span> from "<span class="bold">${line.originalValue}</span>" to "<span class="bold">${line.newValue}</span>".`;
     if (line.originalValue > line.newValue) {
       return `<span class="red">Decreases</span> <span class="underline">${line.fieldName}</span> from <span class="bold">${line.originalValue}</span> to <span class="bold">${line.newValue}</span>.`;
@@ -94,6 +94,10 @@ export class AppComponent {
     const idKey = this.idxCol || this.originalFile.headers[0];
     this.result = this.originalFile.lines.reduce((acc, curr) => {
       const changedLine = this.changedFile.lines.find(cl => cl[idKey] === curr[idKey]);
+      if (!changedLine) {
+        acc.push({ id: curr[idKey], name: curr[this.nameCol], message: `This line was removed.` });
+        return acc;
+      }
       const currChanges = { id: curr[idKey], name: changedLine[this.nameCol], changes: [] } as FileChange;
       this.originalFile.headers
         .filter(h => changedLine[h] !== curr[h])
@@ -105,6 +109,12 @@ export class AppComponent {
         }
       return acc;
     }, [] as FileChange[]);
+
+    this.changedFile.lines
+      .filter(cl => !this.originalFile.lines.some(ol => cl[idKey] === ol[idKey]))
+      .forEach(cl => {
+        this.result.push({ id: cl[idKey], name: cl[this.nameCol], message: `This line was added.` });
+      });
 
     if (this.result.length === 0) this.errorMessage = 'There are no differences in these files.';
   }

@@ -38,13 +38,14 @@
 </div>
 
 <div class="container" *ngIf="result && result.length > 0">
-  <h2 class="hidden-print">Result</h2>
+  <h2 class="hidden-print" style="padding-left: .5rem">Result</h2>
   <ul>
     <li *ngFor="let r of result">
       <span style="font-weight: bold;">{{r.id}} - {{r.name}}</span>
-      <ul>
+      <ul *ngIf="r.changes">
         <li *ngFor="let c of r.changes" [innerHTML]="getTextMessage(c)"></li>
       </ul>
+      <span *ngIf="!r.changes"> - {{r.message}}</span>
     </li>
   </ul>
 </div>

@@ -62,9 +62,9 @@ export class AppComponent {
   parseFile(fhxFile) {
     const lines = fhxFile.file.split(`\n`);
     for(let i = 0; i < this.headerRow; i++) {
-      lines.shift();
+      console.log(lines.shift());
     }
-    fhxFile.headers = lines.shift().split(`;`);
+    fhxFile.headers = lines.shift().split(`;`).map(h => h.trim());
     fhxFile.lines = lines.map(l => {
       const cols = l.split(`;`);
       if (cols[0] === '') return undefined;
@@ -81,7 +81,7 @@ export class AppComponent {
 
   getTextMessage(line) {
     if (isNaN(+line.originalValue)) return `Changes <span class="underline">${line.fieldName}</span> from "<span class="bold">${line.originalValue}</span>" to "<span class="bold">${line.newValue}</span>".`;
-    if (line.originalValue > line.newValue) {
+    if (+line.originalValue > +line.newValue) {
       return `<span class="red">Decreases</span> <span class="underline">${line.fieldName}</span> from <span class="bold">${line.originalValue}</span> to <span class="bold">${line.newValue}</span>.`;
     } else {
       return `<span class="green">Increases</span> <span class="underline">${line.fieldName}</span> from <span class="bold">${line.originalValue}</span> to <span class="bold">${line.newValue}</span>.`;
@@ -100,7 +100,7 @@ export class AppComponent {
       }
       const currChanges = { id: curr[idKey], name: changedLine[this.nameCol], changes: [] } as FileChange;
       this.originalFile.headers
-        .filter(h => changedLine[h] !== curr[h])
+        .filter(h => changedLine[h].trim() !== curr[h].trim())
         .forEach(v => {
           currChanges.changes.push({ fieldName: v, originalValue: curr[v], newValue: changedLine[v] })
         });
